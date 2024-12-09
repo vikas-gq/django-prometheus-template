@@ -2,7 +2,7 @@ import json
 import redis
 from typing import Any, Union
 
-from gq_webhooks_backend.utils.metrics import cache_get_total, cache_hits_total
+from project_name.utils.metrics import cache_get_total, cache_hits_total
 
 
 class ElastiCacheUtility:
