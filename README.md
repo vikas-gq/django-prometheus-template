@@ -38,7 +38,7 @@ MIDDLEWARE = [
     'django_prometheus.middleware.PrometheusBeforeMiddleware',
     # ...
     'django_prometheus.middleware.PrometheusAfterMiddleware',
-    'project_name.middleware.MetricsBasicAuthMiddleware'
+    'project_name.middlewares.MetricsBasicAuthMiddleware'
 ]
 
 
