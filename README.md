@@ -66,7 +66,7 @@ urlpatterns = [
 ```python
 
 # ...
-from project_name.project_name.utils.metrics import setup_db_metrics
+from project_name.utils.metrics import setup_db_metrics
 
 # ...
 
