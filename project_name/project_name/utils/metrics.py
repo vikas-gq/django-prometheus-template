@@ -1,3 +1,4 @@
+import inspect
 import time
 
 from prometheus_client import Counter, REGISTRY, Histogram, Summary
@@ -32,7 +33,7 @@ query_duration_seconds = Histogram(
 slow_queries = Summary(
     'sqlalchemy_slow_query_details',
     'Details of SQL queries taking more than 1 second',
-    ['operation', 'query_text', 'parameters', 'duration'],
+    ['operation', 'query_text', 'parameters', 'duration','file_name','line_num  ber'],
     registry=REGISTRY
 )
 
@@ -43,21 +44,38 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
     duration = time.time() - context._query_start_time
     operation = statement.split()[0].upper()  # e.g., SELECT, INSERT
 
+    file_name = "unknown"
+    line_number = "unknown"
+    try:
+        stack = inspect.stack()
+        for frame_info in stack:
+            if "helpers/query_helpers" in frame_info.filename:
+                file_name = frame_info.filename
+                line_number = frame_info.lineno
+                break
+    except Exception as ex:
+        pass
+
     # Only log slow queries (duration > 1 second)
     if duration > 1.0:
         slow_queries.labels(
             operation=operation,
             query_text=statement,
             parameters=str(parameters),
-            duration=f"{duration:.3f}s"
+            duration=f"{duration:.3f}s",
+            file_name=file_name,
+            line_number=line_number
         ).observe(duration)
 
     query_duration_seconds.labels(operation=operation).observe(duration)
     django_db_execute_total.labels(operation=operation).inc()
 
-def handle_db_error(conn, cursor, statement, parameters, context, exception):
-    operation = statement.split()[0].upper()
-    error_type = type(exception).__name__
+def handle_db_error(context):
+    statement = context.statement if context.statement else "UNKNOWN"
+    operation = statement.split()[0].upper() if statement else "UNKNOWN"
+
+    error_type = type(context.original_exception).__name__
+
     db_errors_total.labels(operation=operation, error_type=error_type).inc()
 
 def setup_db_metrics(engine):
