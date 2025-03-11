@@ -1,8 +1,11 @@
+import os
 from opentelemetry import trace
 
 def trace_span(span_name=None):
     """
     A decorator that creates a tracing span around a function using OpenTelemetry.
+    
+    Tracing is enabled/disabled based on the ENABLE_TRACING environment variable.
     
     Args:
         span_name (str, optional): The name of the span to create. 
@@ -11,12 +14,17 @@ def trace_span(span_name=None):
     Returns:
         decorator: A function decorator.
     """
+    tracing_enabled = os.getenv("ENABLE_TRACING", "on").lower() == "on"
+
     # Check if we're being called as @trace_span (without args)
     if callable(span_name):
         func = span_name
         span_name = func.__name__
-        
+
         def wrapper(*args, **kwargs):
+            if not tracing_enabled:
+                return func(*args, **kwargs)  # Skip tracing
+            
             tracer = trace.get_tracer(__name__)
             with tracer.start_as_current_span(span_name) as span:
                 try:
@@ -27,14 +35,17 @@ def trace_span(span_name=None):
                 except Exception as e:
                     span.record_exception(e)
                     raise
-        
+
         return wrapper
-        
+
     # Regular case: @trace_span("name")
     def decorator(func):
         actual_span_name = span_name or func.__name__
-        
+
         def wrapper(*args, **kwargs):
+            if not tracing_enabled:
+                return func(*args, **kwargs)  # Skip tracing
+            
             tracer = trace.get_tracer(__name__)
             with tracer.start_as_current_span(actual_span_name) as span:
                 try:
@@ -45,7 +56,7 @@ def trace_span(span_name=None):
                 except Exception as e:
                     span.record_exception(e)
                     raise
-                    
+
         return wrapper
-    
+
     return decorator
