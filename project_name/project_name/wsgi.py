@@ -1,25 +1,29 @@
 import os
+
 from django.core.wsgi import get_wsgi_application
-from opentelemetry.instrumentation.django import DjangoInstrumentor
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
-# Set the default Django settings module
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project_name.settings")
+from django.conf import settings
 
-# Check if tracing is enabled based on the environment variable
-tracing_enabled = os.getenv("ENABLE_TRACING", "on").lower() == "on"
+print("Tracing Enabled? : ",settings.OTEL_ENABLE_TRACING)
 
-if tracing_enabled:
-    # Initialize OpenTelemetry (Tempo) Tracing
-    trace_provider = TracerProvider()
-    trace_exporter = OTLPSpanExporter()  # Exports traces to Tempo
-    span_processor = BatchSpanProcessor(trace_exporter)
-    trace_provider.add_span_processor(span_processor)
+if settings.OTEL_ENABLE_TRACING:
+    from opentelemetry import trace
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.instrumentation.django import DjangoInstrumentor
 
-    # Instrument Django
+    resource = Resource.create({"service.name": settings.OTEL_SERVICE_NAME})
+    tracer_provider = TracerProvider(resource=resource)
+    trace.set_tracer_provider(tracer_provider)
+
+    otlp_exporter = OTLPSpanExporter(endpoint=settings.OTLP_SPAN_EXPORTER_ENDPOINT)
+    span_processor = BatchSpanProcessor(otlp_exporter)
+    tracer_provider.add_span_processor(span_processor)
+
     DjangoInstrumentor().instrument()
 
-# Get WSGI application
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gq_payment_pages_backend.settings')
+
 application = get_wsgi_application()

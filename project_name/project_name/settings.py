@@ -34,3 +34,11 @@ METRICS_USERNAME = os.getenv(
 METRICS_PASSWORD = os.getenv(
     key='METRICS_PASSWORD', default=''
 )
+OTEL_ENABLE_TRACING = os.getenv(
+    key='OTEL_ENABLE_TRACING', default='YES'
+)
+
+
+OTEL_ENABLE_TRACING = OTEL_ENABLE_TRACING.upper() == "YES"
+
+OTEL_PYTHON_DJANGO_INSTRUMENT = True
