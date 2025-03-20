@@ -33,7 +33,7 @@ query_duration_seconds = Histogram(
 slow_queries = Summary(
     'sqlalchemy_slow_query_details',
     'Details of SQL queries taking more than 1 second',
-    ['operation', 'query_text', 'parameters', 'duration','file_name','line_num  ber'],
+    ['operation', 'query_text', 'parameters', 'duration','file_name','line_number'],
     registry=REGISTRY
 )
 
