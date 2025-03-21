@@ -2,7 +2,6 @@ from django.http import HttpResponse
 from django.conf import settings
 import base64
 
-
 class MetricsBasicAuthMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
@@ -36,3 +35,4 @@ class MetricsBasicAuthMiddleware:
         response = HttpResponse("Unauthorized", status=401)
         response['WWW-Authenticate'] = 'Basic realm="Metrics"'
         return response
+    
