@@ -1,5 +1,6 @@
 import os
 from opentelemetry import trace
+from django.conf import settings
 
 def trace_span(span_name=None):
     """
@@ -14,7 +15,7 @@ def trace_span(span_name=None):
     Returns:
         decorator: A function decorator.
     """
-    tracing_enabled = os.getenv("ENABLE_TRACING", "on").lower() == "on"
+    tracing_enabled = settings.OTEL_ENABLE_TRACING
 
     # Check if we're being called as @trace_span (without args)
     if callable(span_name):

@@ -4,8 +4,6 @@ from django.core.wsgi import get_wsgi_application
 
 from django.conf import settings
 
-print("Tracing Enabled? : ",settings.OTEL_ENABLE_TRACING)
-
 if settings.OTEL_ENABLE_TRACING:
     from opentelemetry import trace
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -24,6 +22,6 @@ if settings.OTEL_ENABLE_TRACING:
 
     DjangoInstrumentor().instrument()
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gq_payment_pages_backend.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project_name.settings')
 
 application = get_wsgi_application()
