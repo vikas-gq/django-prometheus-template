@@ -42,31 +42,7 @@ def before_cursor_execute(conn, cursor, statement, parameters, context, executem
 
 def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
     duration = time.time() - context._query_start_time
-    operation = statement.split()[0].upper()  # e.g., SELECT, INSERT
-
-    file_name = "unknown"
-    line_number = "unknown"
-    try:
-        stack = inspect.stack()
-        for frame_info in stack:
-            if "helpers/query_helpers" in frame_info.filename:
-                file_name = frame_info.filename
-                line_number = frame_info.lineno
-                break
-    except Exception as ex:
-        pass
-
-    # Only log slow queries (duration > 1 second)
-    if duration > 1.0:
-        slow_queries.labels(
-            operation=operation,
-            query_text=statement,
-            parameters=str(parameters),
-            duration=f"{duration:.3f}s",
-            file_name=file_name,
-            line_number=line_number
-        ).observe(duration)
-
+    operation = statement.split()[0].upper()
     query_duration_seconds.labels(operation=operation).observe(duration)
     django_db_execute_total.labels(operation=operation).inc()
 
