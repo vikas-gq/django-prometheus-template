@@ -3,17 +3,8 @@ import os
 import socket
 
 from django.conf import settings
-print("Tracing Enabled? : ",settings.OTEL_ENABLE_TRACING)
 
 if settings.OTEL_PYTHON_DJANGO_INSTRUMENT:
-    from opentelemetry import trace
-    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.instrumentation.django import DjangoInstrumentor
-    from opentelemetry.instrumentation.requests import RequestsInstrumentor
-
     from opentelemetry import trace
     from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
     from opentelemetry.sdk.trace import TracerProvider
